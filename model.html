@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title></title>
+		<link rel="stylesheet" href="layui/css/css/layui.css">
+		<style>
+			.clearfix:after {
+				content: '';
+				display: block;
+				height: 0;
+				clear: both;
+				visibility: hidden;
+			}
+			
+			.clearfix {
+				display: inline-block;
+			}
+			
+			* html .clearfix {
+				height: 1%;
+			}
+			
+			.clearfix {
+				display: block;
+			}
+			/* == clearfix == */
+			
+			.modelBox .layui-btn {
+				width: 112px;
+			}
+			
+			#Container {
+				position: relative;
+				width: 320px;
+				height: 430px;
+				margin-right: 40px;
+				overflow: hidden;
+				background: #eee;
+				float: left;
+			}
+			
+			#Text,
+			#watermarkText {
+				float: left;
+				width: 300px;
+			}
+			
+			#DrawText,
+			#Drawwatermark {
+				margin-left: 10px;
+			}
+			
+			.preview {
+				display: inline-block;
+				position: relative;
+				height: 38px;
+				line-height: 38px;
+				padding: 0 18px;
+				background-color: #1E9FFF;
+				color: #fff;
+				white-space: nowrap;
+				text-align: center;
+				font-size: 14px;
+				border: none;
+				border-radius: 2px;
+				cursor: pointer;
+			}
+			
+			.preview input[type="file"] {
+				width: 100%;
+				height: 100%;
+				opacity: 0;
+				position: absolute;
+				left: 0;
+				top: 0;
+				cursor: pointer;
+				z-index: 5;
+			}
+			
+			#finallDom,
+			#logoDom {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 0;
+			}
+			
+			.rtBox {
+				float: left;
+			}
+			
+			.modelBox {
+				margin-bottom: 40px;
+			}
+			
+			.modelBox #Container span {
+				font-size: 12px;
+				position: absolute;
+				left: 0;
+				top: 0;
+				cursor: pointer;
+				display: inline-block;
+				height: auto;
+				overflow: hidden;
+				white-space: nowrap;
+				outline: none;
+				letter-spacing: 0.5px;
+			}
+			
+			.border {
+				border: 1px solid #ccc;
+			}
+			
+			.move {
+				background: #f9f9f9;
+			}
+			
+			.changeCo .layui-btn {
+				padding-right: 0;
+			}
+			
+			#changeColor {
+				margin: 0;
+				margin-left: 10px;
+				vertical-align: top;
+			}
+			
+			#changeColor .layui-colorpicker-trigger-span {
+				border: none;
+			}
+			
+			#changeColor .layui-colorpicker {
+				border: none;
+				padding: 0;
+				line-height: inherit;
+				width: 28px;
+				height: 38px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="layui-form-item" style="margin-top: 20px;">
+			<label class="layui-form-label">海报制作</label>
+			<div class="layui-input-block">
+				<div class="modelBox clearfix">
+					<div id="Container">
+						<img id="finallDom" src="2.jpg" />
+						<img id="logoDom" src="logo.jpg" style="width: 80px;height: 50px;" />
+					</div>
+					<div class="rtBox">
+						<div class="layui-form-item">
+							<button onclick="fontBig()" class="layui-btn layui-btn-normal">放大文字</button>
+						</div>
+						<div class="layui-form-item">
+							<button onclick="fontSmall()" class="layui-btn layui-btn-normal">缩小文字</button>
+						</div>
+						<div class="layui-form-item">
+							<button onclick="fontWeight()" class="layui-btn layui-btn-normal">文字加粗</button>
+						</div>
+						<div class="layui-form-item">
+							<button onclick="fontRow()" class="layui-btn layui-btn-normal">文字横排</button>
+						</div>
+						<div class="layui-form-item">
+							<button onclick="fontColum()" class="layui-btn layui-btn-normal">文字竖排</button>
+						</div>
+						<div class="layui-form-item changeCo">
+							<button class="layui-btn layui-btn-normal">颜色选择<div id="changeColor"></div></button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="preview">
+						点击上传图片
+						<input id="FileBg" type="file" />
+					</div>
+					<div class="preview">
+						点击上传logo
+						<input id="FileBg2" type="file" />
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<input id="Text" type="text" placeholder="请输入文字" autocomplete="off" class="layui-input">
+					<button id="DrawText" class="layui-btn layui-btn-normal">添加文字</button>
+					<button id="RemoveText" class="layui-btn layui-btn-normal">删除文字</button>
+					<button id="RemoveLogo" class="layui-btn layui-btn-normal">删除logo</button>
+				</div>
+				<div class="layui-form-item">
+					<input id="watermarkText" type="text" placeholder="请输入文字" autocomplete="off" class="layui-input">
+					<button id="Drawwatermark" class="layui-btn layui-btn-normal">添加水印文字</button>
+				</div>
+				<div class="layui-form-item">
+					<button onclick="CreateImg()" class="layui-btn" lay-submit lay-filter="formDemo">保存模板</button>
+					<button onclick="CreateFn()" id="canvasTxt" class="layui-btn">生成图文</button>
+					<button onclick="clearFn()" type="reset" class="layui-btn layui-btn-primary">取消</button>
+				</div>
+			</div>
+		</div>
+		</div>
+		<!--画布-->
+		<canvas id="myCanvas" height="400" width="300" style="border:1px solid #d3d3d3;margin-left: 110px;display: none;"></canvas>
+
+		<script src="https://apps.bdimg.com/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="layui/layui.js"></script>
+		<script>
+
+			layui.use('colorpicker', function() {
+				var $ = layui.$,
+					colorpicker = layui.colorpicker;
+				//表单赋值
+				colorpicker.render({
+					elem: '#changeColor',
+					color: '#1E9FFF', //设置默认色
+					done: function(color) {
+						$('span.border').css('color', color);
+					}
+				});
+			});
+			//上传图片
+			$("#FileBg").change(function() {
+				var imgFile = $(this)[0].files[0]
+				if((imgFile.type).indexOf("image/") == -1) { 
+					alert("请上传图片")
+					return
+				}
+				var reader = new FileReader()
+				reader.readAsDataURL(imgFile);
+				reader.onload = function(e) {
+					var base64 = e.target.result;
+					$("#finallDom").attr("src", base64)
+				}
+				//获取图片真实尺寸
+				setTimeout(function() {
+					var
+						real_width,
+						real_height,
+						_im = document.getElementById('finallDom'),
+						im = document.createElement('img');
+					im.src = _im.src,
+						real_width = im.width,
+						real_height = im.height;
+					console.log(real_width + '\n' + real_height);
+				}, 500);
+
+			})
+
+			//上传logo
+			$("#FileBg2").change(function() {
+				var imgFile = $(this)[0].files[0]
+				if((imgFile.type).indexOf("image/") == -1) { 
+					alert("请上传图片")
+					return
+				}
+				var reader = new FileReader()
+				reader.readAsDataURL(imgFile);
+				reader.onload = function(e) {
+					var base64 = e.target.result;
+					$("#logoDom").attr("src", base64)
+				}
+			})
+			//点击后把文字写在上面
+			$("#DrawText").bind("click", function() {
+				var val = $("#Text").val();
+				$("#Container").append('<span contenteditable="true">' + val + '</span>');
+				$("#Text").val('');
+			})
+			//删除文字
+			$("#RemoveText").bind("click", function() {
+				$(".border").remove();
+				$("#Text").val('');
+			})
+			//删除logo
+			$("#RemoveLogo").bind("click", function() {
+				$("#logoDom").remove();
+			})
+			//拖动文字
+			var flag = false
+			var iflogo = false
+			var initX = 0
+			var initY = 0
+			var initLeft = 0
+			var initTop = 0
+			var direction = 0
+			//鼠标按下 改变flag
+			$("#Container span").live("mousedown", function(e) {
+				flag = true
+				$("#Container span").removeClass("border")
+				$(this).addClass("border")
+				initX = getMousePos().x
+				initY = getMousePos().y
+				initLeft = parseInt($("#Container span.border").css("left"))
+				initTop = parseInt($("#Container span.border").css("top"))
+
+			})
+			//鼠标按下 改变iflogo
+			$("#Container #logoDom").live("mousedown", function(e) {
+				iflogo = true
+				$("#Container #logoDom").removeClass("border")
+				$(this).addClass("border")
+				initX = getMousePos().x
+				initY = getMousePos().y
+				initLeft = parseInt($("#Container img.border").css("left"))
+				initTop = parseInt($("#Container img.border").css("top"))
+
+			})
+			//鼠标拖动事件 判断是否已按下  1.8.6版本的jquery可以用live方法
+			document.onmousemove = function() {
+				var moveDom = $("#Container span.border");
+				var logoDom = $("#Container img.border");
+				if(flag) {
+					moveDom.addClass("move");
+					var moveToX = getMousePos().x;
+					var moveToY = getMousePos().y;
+					var topVal = initTop + (moveToY - initY);
+					var leftVal = initLeft + (moveToX - initX);
+					if(topVal < 0 || leftVal < 0 || topVal > 400 || leftVal > 300) {
+						moveDom.css({
+							left: 0,
+							top: 0
+						})
+					} else {
+						moveDom.css({
+							left: leftVal,
+							top: topVal
+						})
+					}
+				}
+				if(iflogo) {
+					logoDom.addClass("move");
+					var moveToX = getMousePos().x;
+					var moveToY = getMousePos().y;
+					var topVal = initTop + (moveToY - initY);
+					var leftVal = initLeft + (moveToX - initX);
+					if(topVal < 0 || leftVal < 0 || topVal > 400 || leftVal > 300) {
+						logoDom.css({
+							left: 0,
+							top: 0
+						})
+					} else {
+						logoDom.css({
+							left: leftVal,
+							top: topVal
+						})
+					}
+				}
+
+			}
+
+			//鼠标松开
+			document.onmouseup = function() {
+				flag = false
+				iflogo = false
+				$("#Container span").removeClass("move");
+				$("#Container img").removeClass("move");
+			}
+
+			function getMousePos(event) {
+				var e = event || window.event;
+				return {
+					'x': e.clientX,
+					'y': e.clientY
+				}
+			}
+			//文字放大
+			function fontBig() {
+				var size = parseInt($(".border").css("font-size"));
+				$(".border").css("font-size", size + 1 + "px")
+				if(direction == 1) {
+					fontColum()
+				}
+			}
+			//文字缩小
+			function fontSmall() {
+				var size = parseInt($(".border").css("font-size"));
+				if(size <= 12){
+					return
+				}else{
+					$(".border").css("font-size", size - 1 + "px")	
+				}
+				if(direction == 1) {
+					fontColum()
+				}
+			}
+			//文字加粗
+			function fontWeight() {
+				var size = parseInt($(".border").css("font-size"));
+				$(".border").css("font-weight", "800")
+			}
+			//横排
+			function fontRow() {
+				$(".border").css("writing-mode", "inherit")
+				direction = 0
+			}
+			//竖排
+			function fontColum() {
+				$(".border").css({
+					"writing-mode": "tb-lr",
+					"writing-mode": "vertical-lr"
+				})
+				direction = 1
+			}
+			//控制回车
+			$("#Container span").bind("keydown", function(e) {
+				var theEvent = e || window.event;
+				var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+				if(code == 13) {
+					e.preventDefault();
+				}
+			});
+			//提交信息给后台
+			function CreateImg() {
+				var json = [];
+				$("#Container span").each(function() {
+					var obj = new Object();
+					obj.color = $(this).css('color');
+					obj.text = $(this).text();
+					obj.fontsize = $(this).css("font-size");
+					obj.top = $(this).css('top');
+					obj.bottom = $(this).css('bottom');
+					obj.left = $(this).css('left');
+					obj.right = $(this).css('right');
+					obj.writingMode = $(this).css('writing-mode');
+					obj.bold = $(this).css('font-weight');
+					json.push(obj)
+				})
+				console.log(json)
+				var jsonimg = [];
+				var objs = new Object();
+				objs.width = $("#logoDom").css("width");
+				objs.height = $("#logoDom").css("height");
+				objs.left = $("#logoDom").css("left");
+				objs.top = $("#logoDom").css("top");
+				objs.path = $("#logoDom").attr("src");
+				jsonimg.push(objs)
+				//console.log(jsonimg)
+			}
+			//重置
+			function clearFn() {
+				window.location.reload();
+			}
+			//添加水印
+			var markTxt;
+			$("#Drawwatermark").click(function() {
+				var txt = $("#watermarkText").val();
+				if(txt == "") {
+					alert('请先输入文字');
+				} else {
+					alert('添加水印成功');
+					markTxt = txt;
+				}
+			})
+			//画布
+			var ifflag = false;
+
+			function CreateFn() {
+				$("#Container img").removeClass("border");
+				$("#Container span").removeClass("border");
+				$("#myCanvas").css("display", "block");
+				var canvasTxt = $("#canvasTxt").text("重置图文");
+				if(ifflag) {
+					window.location.reload();
+				} else {
+					ifflag = true;
+					var canvas = document.getElementById("myCanvas");
+					var ctx = canvas.getContext("2d");
+					var img = $("#finallDom")[0];
+					var imglogo = $("#logoDom")[0];
+					var imgL = parseInt($("#logoDom").css("left"));
+					var imgT = parseInt($("#logoDom").css("top"));
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+					ctx.drawImage(imglogo, imgL, imgT, 80, 50);
+					$("#Container span").each(function() {
+						var text = $(this).text();
+						var color = $(this).css('color');
+						var fontS = $(this).css("font-size");
+						var fontSVal = parseInt(fontS);
+						//console.log(fontSVal)
+						var left = parseInt($(this).css('left'));
+						var lefts = left+ fontSVal -4;
+						var top = parseInt($(this).css('top'));
+						var tops = top + fontSVal;
+						var writingMode = $(this).css('writing-mode');
+						var bold = $(this).css('font-weight');
+						ctx.font = fontS + ' ' + 'Microsoft YaHei';
+						ctx.fillStyle = color;
+
+						if(writingMode == "vertical-lr") {
+							ctx.textAlign = 'center';
+							ctx.textBaseline = 'top';
+							if(bold == "800") {
+								ctx.font = 'normal bold ' + fontS + ' sans-serif';
+								ctx.fillTextVertical(text, lefts, top);
+							} else {
+								ctx.fillTextVertical(text, lefts, top);
+							}
+
+						} else {
+							//ctx.font = 'normal bold 18px sans-serif';
+							ctx.textAlign = 'start';
+							ctx.textBaseline = 'alphabetic';
+							if(bold == "800") {
+								ctx.font = 'normal bold ' + fontS + ' sans-serif';
+								ctx.fillText(text, left, tops);
+							} else {
+								ctx.fillText(text, left, tops);
+							}
+
+						}
+					})
+
+					/*for(let j = 1; j < 10; j++) { //用for循环达到重复输出文字的效果，这个for循环代表纵向循环
+						ctx.beginPath();
+						ctx.font="12px";
+						ctx.fillStyle = "rgba(255,255,255,.2)";
+						ctx.fillText(markTxt, 0, 50 * j);
+						for(let i = 1; i < 10; i++) { //这个for循环代表横向循环，
+							ctx.beginPath();
+							ctx.font="12px";
+							ctx.fillStyle = "rgba(255,255,255,.2)";
+							ctx.fillText(markTxt, 90 * i, 50 * j);
+						}
+					}*/
+					var dataURL = canvas.toDataURL("image/jpg");
+					//console.log(dataURL)
+				}
+			}
+			//文字竖排调用函数
+			CanvasRenderingContext2D.prototype.fillTextVertical = function(text, x, y) {
+				var context = this;
+				var canvas = context.canvas;
+
+				var arrText = text.split('');
+				var arrWidth = arrText.map(function(letter) {
+					return context.measureText(letter).width;
+				});
+
+				var align = context.textAlign;
+				var baseline = context.textBaseline;
+
+				if(align == 'left') {
+					x = x + Math.max.apply(null, arrWidth) / 2;
+				} else if(align == 'right') {
+					x = x - Math.max.apply(null, arrWidth) / 2;
+				}
+				if(baseline == 'bottom' || baseline == 'alphabetic' || baseline == 'ideographic') {
+					y = y - arrWidth[0] / 2;
+				} else if(baseline == 'top' || baseline == 'hanging') {
+					y = y + arrWidth[0] / 2;
+				}
+
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+
+				// 开始逐字绘制
+				arrText.forEach(function(letter, index) {
+					// 确定下一个字符的纵坐标位置
+					var letterWidth = arrWidth[index];
+					// 是否需要旋转判断
+					var code = letter.charCodeAt(0);
+					if(code <= 256) {
+						context.translate(x, y);
+						// 英文字符，旋转90°
+						context.rotate(90 * Math.PI / 180);
+						context.translate(-x, -y);
+					} else if(index > 0 && text.charCodeAt(index - 1) < 256) {
+						// y修正
+						y = y + arrWidth[index - 1] / 2;
+					}
+					context.fillText(letter, x, y);
+					// 旋转坐标系还原成初始态
+					context.setTransform(1, 0, 0, 1, 0, 0);
+					// 确定下一个字符的纵坐标位置
+					var letterWidth = arrWidth[index];
+					y = y + letterWidth;
+				});
+				// 水平垂直对齐方式还原
+				context.textAlign = align;
+				context.textBaseline = baseline;
+			};
+		</script>
+	</body>
+
+</html>
